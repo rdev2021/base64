@@ -21,7 +21,7 @@ export default function Privacy() {
                             }`}
                         onClick={() => setIsDarkMode((prev) => !prev)}
                     >
-                        {isDarkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+                        {isDarkMode ? 'Light Theme' : 'Dark Theme'}
                     </button>
                 </div>
 
