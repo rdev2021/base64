@@ -11,7 +11,7 @@ export default function Footer({ isDarkMode }: FooterProps) {
                 }`}
         >
             <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-                <p>&copy; 2023 Base64 Encoder and Decoder. All rights reserved.</p>
+                <p>&copy; 2024 Base64 Encoder and Decoder. All rights reserved.</p>
                 <div className="flex space-x-4">
                     <Link
                         href="/privacy"
