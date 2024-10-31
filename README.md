@@ -1,5 +1,8 @@
 # Base64 Encoding and Decoding Application
 
+## Introduction
+This application is part of my journey to learn NextJS. Raise a ticket in case if you noticied any issues. I am open to suggestions.
+
 ## Overview
 
 This application allows users to easily encode and decode text using Base64 encoding. It provides a user-friendly interface where users can enter text. 
