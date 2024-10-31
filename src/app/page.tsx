@@ -13,59 +13,23 @@ export default function Home() {
   const [decodeError, setDecodeError] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Load saved state on component mount
   useEffect(() => {
-    const savedTab = localStorage.getItem('activeTab');
-    const savedInput = localStorage.getItem('inputValue');
-    const savedOutput = localStorage.getItem('outputValue');
     const savedTheme = localStorage.getItem('isDarkMode');
 
-    if (savedTab) setActiveTab(savedTab as 'encoder' | 'decoder');
-    if (savedInput) setInputValue(savedInput);
-    if (savedOutput) setOutputValue(savedOutput);
+    setActiveTab('encoder');
+    setInputValue('');
+    setOutputValue('');
+    setDecodeError('');
     if (savedTheme !== null) setIsDarkMode(savedTheme === 'true');
+    localStorage.removeItem('inputValue');
+    localStorage.removeItem('outputValue');
   }, []);
-
-  // Save state changes to localStorage
-  useEffect(() => {
-    localStorage.setItem('activeTab', activeTab);
-    localStorage.setItem('inputValue', inputValue);
-    localStorage.setItem('outputValue', outputValue);
-    localStorage.setItem('isDarkMode', isDarkMode.toString());
-  }, [activeTab, inputValue, outputValue, isDarkMode]);
 
   const handleTabChange = (tab: 'encoder' | 'decoder') => {
     setActiveTab(tab);
+    setInputValue('');
+    setOutputValue('');
     setDecodeError('');
-
-    // Keep the input value when switching tabs
-    if (tab === 'encoder') {
-      try {
-        // When switching to encoder, try to decode the current input as it might be base64
-        const decodedInput = atob(inputValue);
-        setInputValue(decodedInput);
-        setOutputValue(inputValue); // The original base64 becomes the output
-      } catch {
-        // If decoding fails, keep the current input
-        const encodedOutput = btoa(inputValue);
-        setOutputValue(encodedOutput);
-      }
-    } else {
-      try {
-        // When switching to decoder, try to encode the current input
-        const encodedInput = btoa(inputValue);
-        setInputValue(encodedInput);
-        setOutputValue(inputValue); // The original text becomes the output
-      } catch {
-        // If encoding fails, keep the current input
-        try {
-          const decodedOutput = atob(inputValue);
-          setOutputValue(decodedOutput);
-        } catch {
-          setDecodeError('Error decoding input. Please check the input format.');
-        }
-      }
-    }
   };
 
   const handleInputChange = (e: SyntheticEvent<HTMLTextAreaElement>) => {
@@ -104,23 +68,24 @@ export default function Home() {
   return (
     <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
       <Header isDarkMode={isDarkMode} />
-      <main className="flex-grow container mx-auto my-8 px-4">
+      <main className="flex-grow container mx-auto my-4 px-4 sm:my-8">
+        {/* Theme Toggle - Made more compact for mobile */}
         <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-4">
-            <button
-              className={`px-4 py-2 rounded-md ${isDarkMode
-                ? 'bg-gray-700 hover:bg-gray-600'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                }`}
-              onClick={() => setIsDarkMode((prev) => !prev)}
-            >
-              {isDarkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            </button>
-          </div>
+          <button
+            className={`px-3 py-1 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base ${isDarkMode
+              ? 'bg-gray-700 hover:bg-gray-600'
+              : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+              }`}
+            onClick={() => setIsDarkMode((prev) => !prev)}
+          >
+            {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+          </button>
         </div>
+
+        {/* Tabs - Made full width and more compact */}
         <div className="flex mb-4">
           <button
-            className={`flex-1 px-4 py-2 rounded-l-md ${activeTab === 'encoder'
+            className={`flex-1 px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base rounded-l-md ${activeTab === 'encoder'
               ? `${isDarkMode ? 'bg-gray-700' : 'bg-gray-400'} text-white hover:bg-gray-600`
               : `${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} text-gray-800 hover:bg-gray-500`
               }`}
@@ -129,7 +94,7 @@ export default function Home() {
             Encoder
           </button>
           <button
-            className={`flex-1 px-4 py-2 rounded-r-md ${activeTab === 'decoder'
+            className={`flex-1 px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base rounded-r-md ${activeTab === 'decoder'
               ? `${isDarkMode ? 'bg-gray-700' : 'bg-gray-400'} text-white hover:bg-gray-600`
               : `${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} text-gray-800 hover:bg-gray-500`
               }`}
@@ -138,14 +103,16 @@ export default function Home() {
             Decoder
           </button>
         </div>
-        <div className={`bg-${isDarkMode ? 'gray-700' : 'white'} shadow-md rounded-md p-6`}>
+
+        {/* Main Content Area - Adjusted for better mobile layout */}
+        <div className={`bg-${isDarkMode ? 'gray-700' : 'white'} shadow-md rounded-md p-4 sm:p-6`}>
           <div className="mb-4">
             <label htmlFor="input" className="block font-medium mb-2">
               Input:
             </label>
             <textarea
               id="input"
-              className={`w-full h-32 rounded-md border border-gray-300 p-2 ${isDarkMode ? 'bg-gray-600 text-white' : 'bg-white text-black'
+              className={`w-full h-24 sm:h-32 rounded-md border border-gray-300 p-2 text-sm sm:text-base ${isDarkMode ? 'bg-gray-600 text-white' : 'bg-white text-black'
                 } focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
               value={inputValue}
               onChange={handleInputChange}
@@ -160,7 +127,7 @@ export default function Home() {
               <button
                 onClick={handleCopy}
                 disabled={!outputValue || !!decodeError}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md ${isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
+                className={`flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1 text-sm sm:text-base rounded-md ${isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
                   } ${(!outputValue || !!decodeError) && 'opacity-50 cursor-not-allowed'}`}
               >
                 {copySuccess ? (
@@ -173,7 +140,7 @@ export default function Home() {
             </div>
             <textarea
               id="output"
-              className={`w-full h-32 rounded-md border border-gray-300 p-2 ${isDarkMode ? 'bg-gray-600 text-white' : 'bg-white text-black'
+              className={`w-full h-24 sm:h-32 rounded-md border border-gray-300 p-2 text-sm sm:text-base ${isDarkMode ? 'bg-gray-600 text-white' : 'bg-white text-black'
                 } resize-none ${decodeError ? 'border-red-500' : ''}`}
               value={decodeError ? decodeError : outputValue}
               readOnly
@@ -181,10 +148,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Use Cases Section */}
-        <div className={`mt-8 bg-${isDarkMode ? 'gray-700' : 'white'} shadow-md rounded-md p-6`}>
-          <h2 className="text-2xl font-bold mb-4">Common Use Cases</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+        {/* Use Cases Section - Made responsive with stack layout on mobile */}
+        <div className={`mt-6 sm:mt-8 bg-${isDarkMode ? 'gray-700' : 'white'} shadow-md rounded-md p-4 sm:p-6`}>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Common Use Cases</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <h3 className="text-xl font-semibold mb-2">Kubernetes Secrets</h3>
               <p className="mb-2">Base64 encoding is used in Kubernetes secrets to store sensitive data:</p>
@@ -240,13 +207,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Command Line Usage Section */}
-        <div className={`mt-8 bg-${isDarkMode ? 'gray-700' : 'white'} shadow-md rounded-md p-6`}>
+        {/* Command Line Usage Section - Made responsive */}
+        <div className={`mt-6 sm:mt-8 bg-${isDarkMode ? 'gray-700' : 'white'} shadow-md rounded-md p-4 sm:p-6`}>
           <div className="flex items-center gap-2 mb-4">
-            <Terminal className="w-6 h-6" />
-            <h2 className="text-2xl font-bold">Command Line Usage</h2>
+            <Terminal className="w-5 h-5 sm:w-6 sm:h-6" />
+            <h2 className="text-xl sm:text-2xl font-bold">Command Line Usage</h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <h3 className="text-xl font-semibold mb-2">Linux/macOS</h3>
               <div className="space-y-4">
