@@ -5,7 +5,7 @@ This application is part of my journey to learn NextJS. Raise a ticket in case i
 
   ### Hosted in Cloudflare pages.
 
-    https://base64-2zo.pages.dev/
+    [https://base64-2zo.pages.dev/](https://base64-2zo.pages.dev/)
 
 ## Overview
 
