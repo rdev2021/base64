@@ -18,6 +18,12 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Cache depedencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install dependencies
         run: npm install
 
