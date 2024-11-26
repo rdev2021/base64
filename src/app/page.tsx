@@ -3,7 +3,7 @@
 import { useState, SyntheticEvent, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import { Copy, CheckCircle, Terminal } from 'lucide-react';
+import { Copy, CheckCircle, Terminal, AlertTriangle } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'encoder' | 'decoder'>('encoder');
@@ -12,6 +12,40 @@ export default function Home() {
   const [outputValue, setOutputValue] = useState('');
   const [decodeError, setDecodeError] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [doubleEncodingWarning, setDoubleEncodingWarning] = useState('');
+
+  // Is Base64 Regex Check
+  const isBase64Regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
+
+  // Define a more specific error type
+  interface Base64Error extends Error {
+    message: string;
+  }
+
+  // New function to generate user-friendly error messages
+  const getDecodingErrorMessage = (error: Base64Error): string => {
+    const errorString = error.message.toLowerCase();
+
+    if (errorString.includes('invalid character')) {
+      return 'The input contains characters that are not valid in Base64 encoding. Please ensure you have copied the correct Base64 string.';
+    }
+
+    if (errorString.includes('incorrect padding')) {
+      return 'The Base64 string appears to be incomplete or incorrectly padded. Make sure the entire string is copied correctly.';
+    }
+
+    if (inputValue.trim() === '') {
+      return 'Please enter a Base64 encoded string to decode.';
+    }
+
+    // Additional catch-all for invalid base64 format
+    if (errorString.includes('invalid base64')) {
+      return 'The input is not a valid Base64 encoded string.';
+    }
+
+    // Generic fallback error
+    return 'Unable to decode the input. Please check the Base64 string and try again.';
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('isDarkMode');
@@ -20,6 +54,7 @@ export default function Home() {
     setInputValue('');
     setOutputValue('');
     setDecodeError('');
+    setDoubleEncodingWarning('');
     if (savedTheme !== null) setIsDarkMode(savedTheme === 'true');
     localStorage.removeItem('inputValue');
     localStorage.removeItem('outputValue');
@@ -30,29 +65,47 @@ export default function Home() {
     setInputValue('');
     setOutputValue('');
     setDecodeError('');
+    setDoubleEncodingWarning('');
   };
 
   const handleInputChange = (e: SyntheticEvent<HTMLTextAreaElement>) => {
     const newInput = e.currentTarget.value;
     setInputValue(newInput);
+    setDoubleEncodingWarning('');
+    setDecodeError('');
 
     if (activeTab === 'encoder') {
+      // Check if input looks like it's already base64 encoded
+      if (isBase64Regex.test(newInput.trim())) {
+        setDoubleEncodingWarning('Warning: This input appears to already be Base64 encoded. Encoding it again will result in a different output.');
+      }
+
       try {
         setOutputValue(btoa(newInput));
-        setDecodeError('');
-      } catch (error) {
-        setDecodeError('Error encoding input.' + error);
+      } catch {
+        setDecodeError('Error encoding input.');
       }
     } else {
+      // Decoding tab
+      if (!newInput.trim()) {
+        setOutputValue('');
+        return;
+      }
+
       try {
+        // Additional validation before decoding
+        if (!isBase64Regex.test(newInput.trim())) {
+          throw new Error('Invalid Base64 format');
+        }
+
         setOutputValue(atob(newInput));
-        setDecodeError('');
       } catch (error) {
-        setDecodeError('Error decoding input. Please check the input format.' + error);
+        const friendlyErrorMessage = getDecodingErrorMessage(error as Base64Error);
+        setDecodeError(friendlyErrorMessage);
+        setOutputValue('');
       }
     }
   };
-
   const handleCopy = async () => {
     if (!decodeError && outputValue) {
       try {
@@ -68,6 +121,13 @@ export default function Home() {
   return (
     <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
       <Header isDarkMode={isDarkMode} />
+      {/* To display warning note */}
+      {doubleEncodingWarning && (
+        <div className={`flex items-center p-3 rounded-md mb-4 ${isDarkMode ? 'bg-yellow-900/50' : 'bg-yellow-100'}`}>
+          <AlertTriangle className="w-5 h-5 mr-2 text-yellow-500" />
+          <p className="text-sm">{doubleEncodingWarning}</p>
+        </div>
+      )}
       <main className="flex-grow container mx-auto my-4 px-4 sm:my-8">
         {/* Theme Toggle - Made more compact for mobile */}
         <div className="flex justify-between items-center mb-4">
