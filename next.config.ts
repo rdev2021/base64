@@ -10,6 +10,7 @@ const getGitHash = () => {
 
 const nextConfig: NextConfig = {
   output: 'export',
+  poweredByHeader: false,
   env: {
     NEXT_PUBLIC_GIT_HASH: getGitHash(),
   },
