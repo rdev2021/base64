@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "cfbuild": "next build && cp ./_headers ./out",
     "start": "next start --port 5500",
     "lint": "next lint"
   },
