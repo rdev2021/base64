@@ -83,7 +83,7 @@ export default function Home() {
         const timer = setTimeout(() => {
           setIsWarningVisible(false);
           setTimeout(() => setDoubleEncodingWarning(''), 500); // Allow fade-out to complete
-        }, 5000);
+        }, 2000);
 
         return () => clearTimeout(timer);
       }
