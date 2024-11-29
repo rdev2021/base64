@@ -13,6 +13,7 @@ export default function Home() {
   const [decodeError, setDecodeError] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
   const [doubleEncodingWarning, setDoubleEncodingWarning] = useState('');
+  const [isWarningVisible, setIsWarningVisible] = useState(false);
 
   // Is Base64 Regex Check
   const isBase64Regex = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
@@ -71,13 +72,20 @@ export default function Home() {
   const handleInputChange = (e: SyntheticEvent<HTMLTextAreaElement>) => {
     const newInput = e.currentTarget.value;
     setInputValue(newInput);
-    setDoubleEncodingWarning('');
     setDecodeError('');
 
     if (activeTab === 'encoder') {
       // Check if input looks like it's already base64 encoded
       if (isBase64Regex.test(newInput.trim())) {
         setDoubleEncodingWarning('Warning: This input appears to already be Base64 encoded. Encoding it again will result in a different output.');
+        setIsWarningVisible(true);
+
+        const timer = setTimeout(() => {
+          setIsWarningVisible(false);
+          setTimeout(() => setDoubleEncodingWarning(''), 500); // Allow fade-out to complete
+        }, 5000);
+
+        return () => clearTimeout(timer);
       }
 
       try {
@@ -106,6 +114,7 @@ export default function Home() {
       }
     }
   };
+
   const handleCopy = async () => {
     if (!decodeError && outputValue) {
       try {
@@ -121,9 +130,18 @@ export default function Home() {
   return (
     <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
       <Header isDarkMode={isDarkMode} />
-      {/* To display warning note */}
+
+      {/* Warning with fade-out */}
       {doubleEncodingWarning && (
-        <div className={`flex items-center p-3 rounded-md mb-4 ${isDarkMode ? 'bg-yellow-900/50' : 'bg-yellow-100'}`}>
+        <div
+          className={`
+            flex items-center 
+            p-3 rounded-md mb-4 
+            transition-all duration-500 ease-out 
+            ${isDarkMode ? 'bg-yellow-900/50' : 'bg-yellow-100'}
+            ${isWarningVisible ? 'opacity-100' : 'opacity-0'}
+          `}
+        >
           <AlertTriangle className="w-5 h-5 mr-2 text-yellow-500" />
           <p className="text-sm">{doubleEncodingWarning}</p>
         </div>
