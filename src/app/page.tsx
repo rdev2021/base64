@@ -80,15 +80,14 @@ export default function Home() {
         setDoubleEncodingWarning('Warning: This input appears to already be Base64 encoded. Encoding it again will result in a different output.');
         setIsWarningVisible(true);
 
-        const timer = setTimeout(() => {
+        setTimeout(() => {
           setIsWarningVisible(false);
           setTimeout(() => setDoubleEncodingWarning(''), 500); // Allow fade-out to complete
         }, 2000);
-
-        return () => clearTimeout(timer);
       }
 
       try {
+        // Always attempt to encode, regardless of whether it looks like base64
         setOutputValue(btoa(newInput));
       } catch {
         setDecodeError('Error encoding input.');
